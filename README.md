@@ -1,2 +1,2 @@
-# Labs_SD
-Distributed Systems Labs
+# MapReduce
+MapReduce implementation in the Distributed Sistems Subject using pyActor.

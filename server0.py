@@ -9,8 +9,6 @@ if __name__ == "__main__":
 
 	if len(sys.argv) >= 2:
 		host = create_host('http://127.0.0.1:'+sys.argv[1]+'/')
-		registry = host.lookup_url('http://127.0.0.1:6000/regis', 'Registry','registry')
-		registry.bind('server:'+sys.argv[1], host)
 		print 'host listening at port', sys.argv[1]
 		serve_forever()
 	else:

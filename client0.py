@@ -87,21 +87,28 @@ if __name__ == "__main__":
 
     text_example="sijbd nsaocn ee ckkcmmc ee cmdkscmkjds m skd mskld\n m  msdkm ee m lmsmm msl mdlm msdm lmdsz dslmld"
 
-    if len(sys.argv) >= 1:
+    if len(sys.argv) >= 4:#5:
 
         host = create_host('http://127.0.0.1:'+sys.argv[1]+'/')
 
-        #Getting the server proxy
-        registry = host.lookup_url('http://127.0.0.1:6000/regis', 'Registry','registry')
-        remote_hosts = registry.get_all()
-        remote_host = remote_hosts.pop()
-        reducer = remote_host.spawn('reducer', 'client/Reducer', len(remote_hosts))
-        i = 0
-        for remote_host in remote_hosts:
-            mapper = remote_host.spawn('mapper'+str(i), 'client/Mapper', text_example)
-            mapper.setReducer(reducer)
-            mapper.start()
-            i+=1
+        remote_host = host.lookup_url('http://127.0.0.1:'+sys.argv[2]+'/', Host)
+        print remote_host
+        mapper1 = remote_host.spawn('mapper1', 'client/Mapper', text_example)
+
+        remote_host2 = host.lookup_url('http://127.0.0.1:'+sys.argv[3]+'/', Host)
+        print remote_host2
+        mapper2 = remote_host2.spawn('mapper2', 'client/Mapper', text_example)
+
+        remote_host3 = host.lookup_url('http://127.0.0.1:'+sys.argv[4]+'/', Host)
+        print remote_host3
+        reducer = remote_host3.spawn('reducer', 'client/Reducer', 2)
+
+        mapper1.setReducer(reducer)
+        mapper2.setReducer(reducer)
+        mapper1.start()
+        mapper2.start()
+
+
         try:
             print "fi"
             #print mapper1.wait_a_lot(timeout=1)

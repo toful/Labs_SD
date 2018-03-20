@@ -4,6 +4,8 @@ Remote client. Client
 '''
 from pyactor.context import set_context, create_host, Host, sleep, shutdown, sys
 from pyactor.exceptions import TimeoutError
+from subprocess import call
+import os, sys
 
 '''class ReducerDecorator(Reducer):
     _ask = []
@@ -92,42 +94,58 @@ class Reducer(object):
         self.reduceFunction()
         print self.result
 
+'''
+This function splits file "filename" into "chunknum" pieces. This function returns a tuple with the output filenames.
+TO-DO optimize function. Now generates charset.length ^ 2 but only chunknum is necessary
+'''
+def split(chunknum, filename, wd):
+	f = open(wd+'/'+filename, 'r')
+	os.system("split -n "+str(chunknum)+" "+filename) 
+	charset = ("a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z")
+	filenames = ()
+	for i in charset:
+		for j in charset:
+			filenames = filenames + ('x'+i+j,)
+
+	return filenames[:chunknum]
 
 if __name__ == "__main__":
-    set_context()
+	set_context()
 
-    text_example="sijbd nsaocn ee ckkcmmc ee cmdkscmkjds m skd mskld\n m  msdkm ee m lmsmm msl mdlm msdm lmdsz dslmld"
+	if len(sys.argv) >= 3:#5:
+		num_mappers = len(sys.argv) - 3
+		print num_mappers
+		remote_hosts = ()
+		mappers = ()
 
-    if len(sys.argv) >= 3:#5:
-        host = create_host('http://127.0.0.1:'+sys.argv[1]+'/')
-        #Getting the server proxy
-        remote_host = host.lookup_url('http://127.0.0.1:'+sys.argv[2]+'/', Host)
-        print remote_host
-        mapper1 = remote_host.spawn('mapper1', 'client/Mapper', text_example)
+		wd = os.path.dirname(os.path.realpath(__file__))
+		filenames = split(num_mappers, "input.txt", wd)
+		host = create_host('http://127.0.0.1:'+sys.argv[1]+'/')
 
-        remote_host2 = host.lookup_url('http://127.0.0.1:'+sys.argv[3]+'/', Host)
-        print remote_host2
-        mapper2 = remote_host2.spawn('mapper2', 'client/Mapper', text_example)
+		#Getting the server proxy
+		for x in range(0, num_mappers-1):
+			remote_hosts = remote_hosts + (host.lookup_url('http://127.0.0.1:'+sys.argv[x+2]+'/', Host), )
+			mappers = mappers + (remote_hosts[x].spawn('mapper'+str(x), 'client/Mapper', open(wd+'/'+filenames[x], 'r').read()), )
 
-        remote_host3 = host.lookup_url('http://127.0.0.1:'+sys.argv[4]+'/', Host)
-        print remote_host3
-        reducer = remote_host3.spawn('reducer', 'client/Reducer', 2)
+		remote_host3 = host.lookup_url('http://127.0.0.1:'+sys.argv[4]+'/', Host)
+		print remote_host3
+		reducer = remote_host3.spawn('reducer', 'client/Reducer', 2)
 
-        mapper1.setReducer(reducer)
-        mapper2.setReducer(reducer)
-        mapper1.start()
-        mapper2.start()
+		for mapper in mappers:
+			mapper.setReducer(reducer)
 
+		for mapper in mappers:
+			mapper.start()
 
-        try:
-            print mapper1.wait_a_lot(timeout=1)
+		try:
+			print mapper1.wait_a_lot(timeout=1)
             #remote_host.stop_actor('mapper1')
             #mapper1.stop()
             #remote_host.shutdown()
-        except TimeoutError, e:
-            print e
-    else:
-        print "ERROR: 4 arguments needed: \nMaster Port\n2 Mapper Servers Port\nReducer Server Port";
+		except TimeoutError, e:
+			print e
+	else:
+		print "ERROR: 4 arguments needed: \nMaster Port\n2 Mapper Servers Port\nReducer Server Port";
 
-    sleep(3)
-    shutdown()
+	sleep(3)
+	shutdown()

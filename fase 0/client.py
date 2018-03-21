@@ -4,8 +4,11 @@ Remote client. Client
 '''
 from pyactor.context import set_context, create_host, Host, sleep, shutdown, sys
 from pyactor.exceptions import TimeoutError
+<<<<<<< HEAD:client0.py
 from subprocess import call
 import os, sys
+=======
+>>>>>>> master:client.py
 
 class Mapper(object):
     _ask = ['wait_a_lot']

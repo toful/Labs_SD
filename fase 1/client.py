@@ -24,11 +24,11 @@ class Mapper(object):
         words = line.split()
         # increase counters
         for word in words:
+        	word.strip(',.?!¿¡()')
             if word in self.result:
                 self.result[word] = self.result[word]+[1]
             else:
                 self.result[word] = [1]
-        print self.result
         return 0
 
     def wait_a_lot(self):
@@ -43,6 +43,7 @@ class Mapper(object):
         for line in self.text.split("\n"):
             self.mapFunction(i, line)
             i+=1
+            print "line "+i+"\n" 
         self.reducer.getMapperOutput(self.result)
 
 
@@ -107,12 +108,12 @@ if __name__ == "__main__":
         #Getting the server proxy
         registry = host.lookup_url('http://127.0.0.1:6000/regis', 'Registry','registry')
         remote_hosts = registry.get_all()
-        split(len(remote_hosts)- 1, "input.txt", wd)
+        filenames = split(len(remote_hosts)- 1, "big.txt", wd)
         remote_host = remote_hosts.pop()
         reducer = remote_host.spawn('reducer', 'client/Reducer', len(remote_hosts))
         i = 0
         for remote_host in remote_hosts:
-            mapper = remote_host.spawn('mapper'+str(i), 'client/Mapper', text_example)
+            mapper = remote_host.spawn('mapper'+str(i), 'client/Mapper', open(wd+'/'+filenames[i], 'r').read())
             mapper.setReducer(reducer)
             mapper.start()
             i+=1

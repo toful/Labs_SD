@@ -12,5 +12,5 @@ gnome-terminal -e "python registry.py"
 gnome-terminal -e "python server.py 1234"
 gnome-terminal -e "python server.py 1235"
 gnome-terminal -e "python server.py 1236"
-gnome-terminal -e "python client.py $1"
+gnome-terminal -e "python client.py $1 cw"
 exit 0

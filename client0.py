@@ -7,16 +7,6 @@ from pyactor.exceptions import TimeoutError
 from subprocess import call
 import os, sys
 
-'''class ReducerDecorator(Reducer):
-    _ask = []
-
-    def __init__(self):
-        self.i = 0
-
-    def getMapperOutput(self):
-'''
-
-
 class Mapper(object):
     _ask = ['wait_a_lot']
     _tell = ['start', 'mapFunction','setReducer']
@@ -71,7 +61,6 @@ class Reducer(object):
     def reduceFunction(self):
         for word in self.result.keys():
             self.result[word] = sum(self.result[word])
-        return 0
 
     def getMapperOutput(self, output):
         self.mappers_output.append(output)
@@ -114,7 +103,6 @@ if __name__ == "__main__":
 
 	if len(sys.argv) >= 3:#5:
 		num_mappers = len(sys.argv) - 3
-		print num_mappers
 		remote_hosts = ()
 		mappers = ()
 
@@ -128,7 +116,6 @@ if __name__ == "__main__":
 			mappers = mappers + (remote_hosts[x].spawn('mapper'+str(x), 'client/Mapper', open(wd+'/'+filenames[x], 'r').read()), )
 
 		remote_host3 = host.lookup_url('http://127.0.0.1:'+sys.argv[4]+'/', Host)
-		print remote_host3
 		reducer = remote_host3.spawn('reducer', 'client/Reducer', 2)
 
 		for mapper in mappers:

@@ -4,6 +4,8 @@ Remote client. Client
 '''
 from pyactor.context import set_context, create_host, Host, sleep, shutdown, sys
 from pyactor.exceptions import TimeoutError
+from subprocess import call
+import os, sys
 
 class Mapper(object):
     _ask = ['wait_a_lot']
@@ -81,6 +83,16 @@ class Reducer(object):
         self.reduceFunction()
         print self.result
 
+def split(chunknum, filename, wd):
+	f = open(wd+'/'+filename, 'r')
+	os.system("split -n "+str(chunknum)+" "+filename) 
+	charset = ("a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z")
+	filenames = ()
+	for i in charset:
+		for j in charset:
+			filenames = filenames + ('x'+i+j,)
+
+	return filenames[:chunknum]
 
 if __name__ == "__main__":
     set_context()
@@ -90,10 +102,12 @@ if __name__ == "__main__":
     if len(sys.argv) >= 1:
 
         host = create_host('http://127.0.0.1:'+sys.argv[1]+'/')
+        wd = os.path.dirname(os.path.realpath(__file__)) # Obtenim working directory
 
         #Getting the server proxy
         registry = host.lookup_url('http://127.0.0.1:6000/regis', 'Registry','registry')
         remote_hosts = registry.get_all()
+        split(len(remote_hosts)- 1, "input.txt", wd)
         remote_host = remote_hosts.pop()
         reducer = remote_host.spawn('reducer', 'client/Reducer', len(remote_hosts))
         i = 0

@@ -5,11 +5,12 @@
 
 if [ $# -lt 1 ]
 then
-	echo "ERROR: Client Port needed as an argument!"
+	echo "ERROR: Port is needed as an argument"
 	exit 1
 fi
-gnome-terminal -e "python server.py $(($1+1))"
-gnome-terminal -e "python server.py $(($1+2))"
-gnome-terminal -e "python server.py $(($1+3))"
-gnome-terminal -e "python client.py $1 $(($1+1)) $(($1+2)) $(($1+3))"
+
+	gnome-terminal -e "python server.py $(($1+1))"
+	gnome-terminal -e "python server.py $(($1+2))"
+	gnome-terminal -e "python server.py $(($1+3))"
+	gnome-terminal -e "python client.py $1 $(($1+1)) $(($1+2)) $(($1+3))"
 exit 0

@@ -19,10 +19,11 @@ class Mapper(object):
     _ref = ['setReducer']
 
     def __init__(self, option):
-        print 'Mapper started'
         self.result = {}
         self.text = ""
         self.option = option
+        print 'Mapper initialized'
+
 
     def mapFunctionWC(self):
         # remove leading and trailing whitespace
@@ -57,6 +58,7 @@ class Mapper(object):
         self.reducer=reducer
 
     def start(self, text):
+        print 'Mapper has started'
         self.text = text
         i=0
 
@@ -70,6 +72,9 @@ class Mapper(object):
             print "ERROR: incorrect option, select:\nwc - WordCount\ncw - CountingWords"
             return 1
         self.reducer.getMapperOutput(self.result)
+        print "Mapper has finished"
+        exit()
+        os.system(exit)
 
 class Reducer(object):
     _ask = ['wait_a_lot']
@@ -80,9 +85,11 @@ class Reducer(object):
         self.mappers_output = []
         self.mappers_finished = 0
         self.num_mappers=num_mappers
+        print 'Reducer initialized'
 
     #Word Count function
     def reduceFunction(self, k, v):
+        print "Running Reduce Function"
         self.result[k] = sum(v)
 
     def getMapperOutput(self, output):
@@ -107,8 +114,8 @@ class Reducer(object):
 
         for word in self.result.keys():
             self.reduceFunction(word, self.result[word])
+        print "Reducer has finished"
         print self.result
-        #stop_actor(self, self)
 
 class max_filenames(Exception):
     pass
@@ -116,17 +123,20 @@ class max_filenames(Exception):
 class Splitter(object):
     _ask = ['wait_a_lot']
     _tell = ['start', 'split']
-    _ref = ['AddMapper']
 
     def __init__(self, filename, hosts, IP_webserver):
-        print 'Splitter initialized'
+        print "Splitter initilized"
         self.filename = filename
         self.chunknum = len(hosts)
-        print self.chunknum
         self.hosts = hosts
         self.IP_webserver = IP_webserver
 
+    def wait_a_lot(self):
+        sleep(2)
+        return 'ok'
+
     def split(self, chunknum):
+        print "Running Split Function"
         os.system("split -n "+str(chunknum)+" "+"Out.txt") 
         filenames = ()
         count = 0
@@ -140,34 +150,29 @@ class Splitter(object):
                         raise max_filenames('Escaping from loop')
             
         except max_filenames:
-            print ""
-
-        return filenames    
+            return filenames    
 
     def start(self):
-        print "http://"+self.IP_webserver+":8000/"+self.filename
+        print "Splitter has started"
         text = requests.get("http://"+self.IP_webserver+":8000/"+self.filename).text # Obtaining text from desired file from HTTP server
-        print "esreal"
-        os.chdir("HTTPServer")
-        file = codecs.open('Out.txt', 'w', 'utf-8') # Per alguna rao el working directory o es la del server directament. Pot ser per treballar en local(?)
-        print "hola"
-        file.write(text) 
-        print "cheguee"
-        file.close()
         wd = os.path.dirname(os.path.realpath(__file__)) # Obtenim working directory
-        print wd
-        filenames = self.split(self.chunknum) # Split file in chunknum parts
-        print "filenames"
-        i = 0
-        print self.hosts
 
+        file = codecs.open(wd+'/Out.txt', 'w', 'utf-8') # Per alguna rao el working directory o es la del server directament. Pot ser per treballar en local(?)
+        file.write(text) 
+        file.close()
+        filenames = self.split(self.chunknum) # Split file in chunknum parts
+        
+        i = 0
         for host in self.hosts:
             host.start(open(wd+'/'+filenames[i], 'r').read())
             i+=1
-        
+
         #AUTO-CLEAN
-        os.system("rm x*")
-        os.system("Out.txt")
+        for name in filenames:
+            os.system("rm "+name) # TODO working directory
+        os.system("rm Out.txt")
+        print "Splitter has finished"
+
         return "holi"
 
 
@@ -178,6 +183,7 @@ class Splitter(object):
 # 3: Operation to use [wc|cw]
 # 4: Input file from HTTP Server
 # 5: IP from web server
+# TODO kill the actors
 if __name__ == "__main__":
     set_context()
     if len(sys.argv) > 4:

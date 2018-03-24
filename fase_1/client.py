@@ -9,6 +9,8 @@ from subprocess import call
 import os, sys
 import requests
 import re
+import codecs
+
 
 
 class Mapper(object):
@@ -16,10 +18,10 @@ class Mapper(object):
     _tell = ['start', 'mapFunction','setReducer']
     _ref = ['setReducer']
 
-    def __init__(self, text, option):
+    def __init__(self, option):
         print 'Mapper started'
         self.result = {}
-        self.text = text
+        self.text = ""
         self.option = option
 
     def mapFunctionWC(self):
@@ -54,7 +56,8 @@ class Mapper(object):
     def setReducer(self, reducer):
         self.reducer=reducer
 
-    def start(self):
+    def start(self, text):
+        self.text = text
         i=0
 
         if self.option == "wc":
@@ -73,7 +76,6 @@ class Reducer(object):
     _tell = ['start', 'reduceFunction', 'getMapperOutput']
 
     def __init__(self, num_mappers):
-        print 'Reducer started'
         self.result = {}
         self.mappers_output = []
         self.mappers_finished = 0
@@ -95,6 +97,7 @@ class Reducer(object):
         return 'ok'
 
     def start(self):
+        print 'Reducer started'
         for hashes in self.mappers_output:
             for key in hashes.keys():
                 if key in self.result:
@@ -107,59 +110,100 @@ class Reducer(object):
         print self.result
         #stop_actor(self, self)
 
-'''class split(chunknum, filename, wd, Exception): pass
-    
-    _ask = ['wait_a_lot']
-    _tell = ['start', 'reduceFunction', 'getMapperOutput']
-
-    def __init__(self, num_mappers):'''
 class max_filenames(Exception):
     pass
 
-def split(chunknum, filename):
-    os.system("split -n "+str(chunknum)+" "+filename) 
-    filenames = ()
-    count = 0
-    small_letters = map(chr, range(ord('a'), ord('z')+1))
-    try:
-        for i in small_letters:
-            for j in small_letters:
-                filenames = filenames + ('x'+str(i)+str(j),)
-                count+=1
-                if (chunknum == count):
-                    raise max_filenames('Escaping from loop')
-        
-    except max_filenames:
-        print ""
+class Splitter(object):
+    _ask = ['wait_a_lot']
+    _tell = ['start', 'split']
+    _ref = ['AddMapper']
 
-    return filenames
+    def __init__(self, filename, hosts, IP_webserver):
+        print 'Splitter initialized'
+        self.filename = filename
+        self.chunknum = len(hosts)
+        print self.chunknum
+        self.hosts = hosts
+        self.IP_webserver = IP_webserver
+
+    def split(self, chunknum):
+        os.system("split -n "+str(chunknum)+" "+"Out.txt") 
+        filenames = ()
+        count = 0
+        small_letters = map(chr, range(ord('a'), ord('z')+1))
+        try:
+            for i in small_letters:
+                for j in small_letters:
+                    filenames = filenames + ('x'+str(i)+str(j),)
+                    count+=1
+                    if (chunknum == count):
+                        raise max_filenames('Escaping from loop')
+            
+        except max_filenames:
+            print ""
+
+        return filenames    
+
+    def start(self):
+        print "http://"+self.IP_webserver+":8000/"+self.filename
+        text = requests.get("http://"+self.IP_webserver+":8000/"+self.filename).text # Obtaining text from desired file from HTTP server
+        print "esreal"
+        os.chdir("HTTPServer")
+        file = codecs.open('Out.txt', 'w', 'utf-8') # Per alguna rao el working directory o es la del server directament. Pot ser per treballar en local(?)
+        print "hola"
+        file.write(text) 
+        print "cheguee"
+        file.close()
+        wd = os.path.dirname(os.path.realpath(__file__)) # Obtenim working directory
+        print wd
+        filenames = self.split(self.chunknum) # Split file in chunknum parts
+        print "filenames"
+        i = 0
+        print self.hosts
+
+        for host in self.hosts:
+            host.start(open(wd+'/'+filenames[i], 'r').read())
+            i+=1
+        
+        #AUTO-CLEAN
+        os.system("rm x*")
+        os.system("Out.txt")
+        return "holi"
+
+
+
 # Parameters:
 # 1: Port used to establish the communication
 # 2: Registry IP (Port is hardcoded to be 6000)
 # 3: Operation to use [wc|cw]
+# 4: Input file from HTTP Server
+# 5: IP from web server
 if __name__ == "__main__":
     set_context()
-    if len(sys.argv) > 2:
-        host = create_host('http://127.0.0.1:'+sys.argv[1]+'/')
-        wd = os.path.dirname(os.path.realpath(__file__)) # Obtenim working directory
-
-        #Getting the server proxy
-        registry = host.lookup_url('http://'+sys.argv[2]+':6000/regis', 'Registry','registry')
-        remote_hosts = registry.get_all()
+    if len(sys.argv) > 4:
+        host = create_host('http://127.0.0.1:'+sys.argv[1]) #Create our own host TODO obtain real IP or parametrize for future testing
+        remote_hosts = host.lookup_url('http://'+sys.argv[2]+':6000/regis', 'Registry','registry').get_all() # Obtaining list of servers
         remote_host = remote_hosts.pop()
-        files = split(len(remote_hosts), "sherlock.txt")
-        reducer = remote_host.spawn('reducer', 'client/Reducer', len(remote_hosts))
+        print len(remote_hosts)
+        reducer = remote_host.spawn('reducer', 'client/Reducer', len(remote_hosts)-1) 
         i = 0
-        for remote_host in remote_hosts:
-            mapper = remote_host.spawn('mapper'+str(i), 'client/Mapper', open(wd+'/'+files[i], 'r').read(), sys.argv[3])
+        hosts = ()
+        remote_host = remote_hosts.pop() # deleting possible autoreference in splitter
+
+        for host in remote_hosts:
+            mapper = host.spawn('mapper'+str(i), 'client/Mapper', sys.argv[3])
+            hosts = hosts + (mapper, )
             print "Mapper "+str(i)+" has been created"
             mapper.setReducer(reducer)
-            mapper.start()
             i+=1
-        os.system("rm x*")  # TODO ficar al HTTPServer que sera el que sofrira la particio del fitxer
+
+        print len(remote_hosts)
+        splitter = remote_host.spawn('splitter', 'client/Splitter', sys.argv[4], hosts, sys.argv[5])  # converting one server into a splitter
+        print splitter.start()
 
         try:
             print "fi"
+            sleep(20)
             #print mapper1.wait_a_lot(timeout=1)
             #remote_host.stop_actor('mapper1')
             #mapper1.stop()
@@ -167,7 +211,7 @@ if __name__ == "__main__":
         except TimeoutError, e:
             print e
     else:
-        print "ERROR: 3 arguments needed: \nMaster Port\nNumber of Mappers\nOperation: (wc or cw)";
+        print "ERROR: 5 arguments needed: \n1: Port used to establish the communication\n2: Registry IP (Port is hardcoded to be 6000)\n3: Operation to use [wc|cw]\n4: Input file from HTTP Server\n5: IP from web server";
 
     sleep(3)
     shutdown()

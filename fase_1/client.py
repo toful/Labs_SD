@@ -88,9 +88,17 @@ class Reducer(object):
         print 'Reducer initialized'
 
     #Word Count function
-    def reduceFunction(self, k, v):
+    def reduceFunction(self):
         print "Running Reduce Function"
-        self.result[k] = sum(v)
+        for hashes in self.mappers_output:
+            for key in hashes.keys():
+                if key in self.result:
+                    self.result[key] = self.result[key]+[hashes[key]]
+                else:
+                    self.result[key] = [hashes[key]]
+
+        for word in self.result.keys():
+            self.result[word] = sum(self.result[word])
 
     def getMapperOutput(self, output):
         self.mappers_output.append(output)
@@ -105,15 +113,7 @@ class Reducer(object):
 
     def start(self):
         print 'Reducer started'
-        for hashes in self.mappers_output:
-            for key in hashes.keys():
-                if key in self.result:
-                    self.result[key] = self.result[key]+[hashes[key]]
-                else:
-                    self.result[key] = [hashes[key]]
-
-        for word in self.result.keys():
-            self.reduceFunction(word, self.result[word])
+        self.reduceFunction()
         print "Reducer has finished"
         print self.result
 
@@ -194,7 +194,7 @@ if __name__ == "__main__":
         reducer = remote_host.spawn('reducer', 'client/Reducer', len(remote_hosts)-1) 
         i = 0
         hosts = ()
-        remote_host = remote_hosts.pop() # deleting possible autoreference in splitter
+        remote_host = remote_hosts.pop() 
 
         for host in remote_hosts:
             mapper = host.spawn('mapper'+str(i), 'client/Mapper', sys.argv[3])

@@ -4,6 +4,7 @@ MapReduce
 @author: Cristofol Dauden Esmel & Aleix Marine Tena
 '''
 import os, sys
+import time
 
 class Mapper(object):
 
@@ -106,15 +107,21 @@ if __name__ == "__main__":
         wd = os.path.dirname(os.path.realpath(__file__))
         filenames = split(sys.argv[1], sys.argv[3], wd)
 
+        start = time.time()
+
         mapper = Mapper(sys.argv[2])
-        print filenames
         for i in range(int(sys.argv[1])):
             text=open(wd+'/'+filenames[i],'r').read()
             mappers_output.append(mapper.start(text))
         
         reducer = Reducer()
-        print reducer.start(mappers_output)
+
+        end = time.time()
+
+        result = "\nType of execution: Sequential\nFunction Runned: "+sys.argv[2]+"\nNumber of mappers: "+sys.argv[1]+"\nProcessed File: "+sys.argv[3]+"\nTime taken: "+str(end - start)
+        os.system("echo \""+result+"\""+" >> results.txt")
+        #print reducer.start(mappers_output)
 
         autoclean(filenames)
     else:
-        print "2 arguments nedded:\n\tNum Mappers\n\tMapper function (wc or cw)\n\tFile name"
+        print "3 arguments nedded:\n\tNum Mappers\n\tMapper function (wc or cw)\n\tFile name"

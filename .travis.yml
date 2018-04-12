@@ -3,5 +3,11 @@ sudo: false
 language: python
 
 python:
-  - 2.7
-  
+	- 2.7
+
+install:
+	- pip install codecov
+	- pip install pyactor
+
+script:
+	- python -m coverage run distributed_v1/test.py

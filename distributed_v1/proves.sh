@@ -3,7 +3,7 @@
 #This script will run automatically 3 server, a registry for this servers and a client in three diferent gnome-terminals with different combinatios of
 # wc/cw, number of mappers, and files
 
-nummappers="1 2 3 4 5 6 7 8 9 10"
+nummappers="1 2 4 8"
 operation="wc cw"
 filename="big.txt pg10.txt pg2000.txt"
 

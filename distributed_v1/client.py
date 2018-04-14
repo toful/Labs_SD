@@ -3,12 +3,10 @@
 Remote client. Client
 @author: Cristofol Dauden Esmel & Aleix Marine Tena
 '''
-from pyactor.context import set_context, create_host, Host, sleep, shutdown, sys
+from pyactor.context import set_context, create_host, sleep, shutdown, sys
 from pyactor.exceptions import TimeoutError
-from subprocess import call
-import os, sys
+import os
 import requests
-import re
 import codecs
 import time
 
@@ -38,7 +36,7 @@ class Mapper(object):
                     self.result[word] = self.result.get(word)+1
                 else:
                     self.result[word] = 1
-        
+
         return 0
 
     def mapFunctionCW(self):
@@ -60,7 +58,6 @@ class Mapper(object):
     def start(self, text):
         print 'Mapper has started'
         self.text = text
-        i=0
 
         if self.option == "wc":
             self.mapFunctionWC()
@@ -84,7 +81,7 @@ class Reducer(object):
         self.mappers_output = []
         self.mappers_finished = 0
         self.num_mappers=num_mappers
-        print 'Reducer initialized'
+        print "Reducer initialized"
 
     def reduceFunction(self):
         print "Running Reduce Function"
@@ -143,7 +140,7 @@ class Splitter(object):
 
     def split(self, chunknum):
         print "Running Split Function"
-        os.system("split -n "+str(chunknum)+" "+"Out.txt") 
+        os.system("split -n "+str(chunknum)+" Out.txt")
         filenames = ()
         count = 0
         small_letters = map(chr, range(ord('a'), ord('z')+1))
@@ -154,7 +151,7 @@ class Splitter(object):
                 if (chunknum == count):
                     return filenames
             
-        return filenames    
+        return filenames
 
     def start(self):
         print "Splitter has started"
@@ -162,7 +159,7 @@ class Splitter(object):
         wd = os.path.dirname(os.path.realpath(__file__)) # Obtenim working directory
 
         file = codecs.open(wd+'/Out.txt', 'w', 'utf-8') # Per alguna rao el working directory o es la del server directament. Pot ser per treballar en local(?)
-        file.write(text) 
+        file.write(text)
         file.close()
         filenames = self.split(self.chunknum) # Split file in chunknum parts
         
@@ -174,7 +171,7 @@ class Splitter(object):
         #AUTO-CLEAN
         self.begin = time.time()
         for name in filenames:
-            os.system("rm "+name) 
+            os.system("rm "+name)
         os.system("rm Out.txt")
         print "Splitter has finished"
 
@@ -191,10 +188,10 @@ if __name__ == "__main__":
         host = create_host('http://'+sys.argv[6]+':'+sys.argv[1]) 
         remote_hosts = host.lookup_url('http://'+sys.argv[2]+':6000/regis', 'Registry','registry').get_all() # Obtaining list of servers
         remote_host = remote_hosts.pop()
-        reducer = remote_host.spawn('reducer', 'client/Reducer', len(remote_hosts)-1) 
+        reducer = remote_host.spawn('reducer', 'client/Reducer', len(remote_hosts)-1)
         i = 0
         hosts = ()
-        remote_host = remote_hosts.pop() 
+        remote_host = remote_hosts.pop()
 
         for host in remote_hosts:
             mapper = host.spawn('mapper'+str(i), 'client/Mapper', sys.argv[3])

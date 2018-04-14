@@ -14,7 +14,7 @@ do
 		for k in $filename;
 		do 
 			echo $i $j $k
-			echo -e "\nType of execution: Distributed\nFunction Runned: "$j"\nNumber of mappers: "$i"\nProcessed File: "$k"\nTime taken: " >> results.txt
+			echo -e "\nType of execution: Distributed\nFunction Runned: $j\nNumber of mappers: $i\nProcessed File: $k\nTime taken: " >> results.txt
 
 			./run.sh 2000 127.0.0.1 $j $k 127.0.0.1 127.0.0.1 $i
 			sleep 20

@@ -32,8 +32,8 @@ class Mapper(object):
         print "Running Counting Words"
         self.result={"counter":0}
         for line in self.text.split("\n"):
-            for word in line.strip().split():  # aqui no fa falta eliminar caracters brossa ja que nomes comptem ocurrencies
-                self.result["counter"] = self.result["counter"]+1
+            for word in line.strip().split():
+			self.result["counter"] = self.result["counter"]+1
         return 0
 
     def wait_a_lot(self):
@@ -43,7 +43,6 @@ class Mapper(object):
     def start(self, text):
         print 'Mapper has started'
         self.text = text
-        i=0
 
         if self.option == "wc":
             self.mapFunctionWC()
@@ -83,7 +82,6 @@ class Reducer(object):
 
 def split(chunknum, filename, wd):
     print "Running Split Function"
-    f=open(wd+'/'+filename, 'r')
     os.system("split -n "+str(chunknum)+" "+filename)
     filenames=()
     count=0
@@ -113,7 +111,7 @@ if __name__ == "__main__":
         for i in range(int(sys.argv[1])):
             text=open(wd+'/'+filenames[i],'r').read()
             mappers_output.append(mapper.start(text))
-        
+
         reducer = Reducer()
 
         end = time.time()

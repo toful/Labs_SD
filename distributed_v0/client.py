@@ -4,8 +4,7 @@ Remote client. Client
 '''
 from pyactor.context import set_context, create_host, Host, sleep, shutdown, sys
 from pyactor.exceptions import TimeoutError
-from subprocess import call
-import os, sys
+import os
 
 class Mapper(object):
     _ask = ['wait_a_lot']
@@ -88,7 +87,6 @@ This function splits file "filename" into "chunknum" pieces. This function retur
 TO-DO optimize function. Now generates charset.length ^ 2 but only chunknum is necessary
 '''
 def split(chunknum, filename, wd):
-	f = open(wd+'/'+filename, 'r')
 	os.system("split -n "+str(chunknum)+" "+filename) 
 	charset = ("a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z")
 	filenames = ()

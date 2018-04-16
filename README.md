@@ -1,6 +1,9 @@
 # MapReduce
 MapReduce implementation in the Distributed Sistems Subject using pyActor.
 
+CodeHealth by [Codacy](https://codacy.com): 
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/efcde4633c4840e883419dd586b3f21b)](https://www.codacy.com?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=toful/MapReduce&amp;utm_campaign=Badge_Grade)
+
 ## Pre-requisites
 
 This version has been implemented over pyActor
@@ -9,9 +12,6 @@ More information about this python actor middleware in [Pyactor](https://github.
 ```
 pip install pyactor
 ```
-
-CodeHealth by [Codacy](https://codacy.com): 
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/efcde4633c4840e883419dd586b3f21b)](https://www.codacy.com?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=toful/MapReduce&amp;utm_campaign=Badge_Grade)
 
 ## Functioning
 
@@ -69,7 +69,7 @@ python server.py SLAVE_PORT
 python client.py MASTER_PORT REGISTRY_IP OPERATION INPUT_FILE WEB_SERVER_IP HOST_IP
 ```
 
-You can also validate our solution massively using the script proves.sh. This script uses run.sh for running the MapReduce m*n*o times. Where m is the number of files, n the number of functions and o the number of mappers. This generates a big amount of output data. 
+You can also validate our solution massively using the script proves.sh. This script uses run.sh for running the MapReduce m \* n \* o times. Where m is the number of files, n the number of functions and o the number of mappers. This generates a big amount of output data. 
 
 This data is hardcoded inside the script and it's easily modificable. proves.sh does not need any argument.
 

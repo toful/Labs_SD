@@ -188,24 +188,24 @@ if __name__ == "__main__":
         host = create_host('http://'+sys.argv[6]+':'+sys.argv[1]) 
         remote_hosts = host.lookup_url('http://'+sys.argv[2]+':6000/regis', 'Registry','registry').get_all() # Obtaining list of servers
         remote_host = remote_hosts.pop()
-        reducer = remote_host.spawn('reducer', 'client/Reducer', len(remote_hosts)-1)
+        reducer = remote_host.spawn('reducer'+str(sys.argv[1]), 'client/Reducer', len(remote_hosts)-1)
         i = 0
         hosts = ()
         remote_host = remote_hosts.pop()
 
         for host in remote_hosts:
-            mapper = host.spawn('mapper'+str(i), 'client/Mapper', sys.argv[3])
+            mapper = host.spawn('mapper'+str(i)+str(sys.argv[1]), 'client/Mapper', sys.argv[3])
             hosts = hosts + (mapper, )
             print "Mapper "+str(i)+" has been created"
             mapper.setReducer(reducer)
             i+=1
 
-        splitter = remote_host.spawn('splitter', 'client/Splitter', sys.argv[4], hosts, sys.argv[5])  # converting one server into a splitter
+        splitter = remote_host.spawn('splitter'+str(sys.argv[1]), 'client/Splitter', sys.argv[4], hosts, sys.argv[5])  # converting one server into a splitter
         reducer.setSplitter(splitter)
         splitter.start()
 
         try:
-            sleep(20)
+            sleep(5)
 
         except TimeoutError, e:
             print e

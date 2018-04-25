@@ -3,6 +3,7 @@ MapReduce implementation in the Distributed Sistems Subject using pyActor.
 
 CodeHealth by [Codacy](https://codacy.com): 
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/efcde4633c4840e883419dd586b3f21b)](https://www.codacy.com?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=toful/MapReduce&amp;utm_campaign=Badge_Grade)
+
 CodeCoverage by [Codecov](https://codecov.io):
 [![codecov](https://codecov.io/gh/toful/MapReduce/branch/master/graph/badge.svg)](https://codecov.io/gh/toful/MapReduce)
 
@@ -66,7 +67,7 @@ python registry.py
 python server.py SLAVE_PORT
 ```
 
-4- Run the master
+4- Run the master (use a different port in every execution)
 ```
 python client.py MASTER_PORT REGISTRY_IP OPERATION INPUT_FILE WEB_SERVER_IP HOST_IP
 ```
